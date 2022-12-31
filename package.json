@@ -32,5 +32,8 @@
   "bugs": {
     "url": "https://github.com/iShafayet/HttpsOverWebSocket-InnerServer/issues"
   },
-  "homepage": "https://github.com/iShafayet/HttpsOverWebSocket-InnerServer#readme"
+  "homepage": "https://github.com/iShafayet/HttpsOverWebSocket-InnerServer#readme",
+  "dependencies": {
+    "ws": "^8.11.0"
+  }
 }
