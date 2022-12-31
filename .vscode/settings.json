@@ -1,0 +1,6 @@
+{
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "prettier.printWidth": 80,
+  "editor.tabSize": 2
+}
