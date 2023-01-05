@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import { Config } from "./config.js";
+import { Config } from "../lib/config.js";
 
 export const extractProcessParams = () => {
   if (process.argv.length < 2) {
@@ -27,7 +27,7 @@ export const loadConfig = (path: String): Config => {
 import { homedir } from "os";
 import path from "path";
 import os from "os";
-import constants from "./../constant/common-constants.js";
+import constants from "../constant/common-constants.js";
 
 const ARG_CONFIG_LOCATION = "--config";
 const ENVIRONMENT_CONFIG_LOCATION_KEY = "NK_CONFIG_LOCATION";

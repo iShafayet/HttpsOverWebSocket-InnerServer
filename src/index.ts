@@ -1,6 +1,6 @@
 import { Config } from "./lib/config.js";
 import { Logger } from "./lib/logger.js";
-import { startServer } from "./server.js";
+import { startHisServer } from "./server.js";
 
 // We initiate logger and inject it into global so that it is usable everywhere.
 global.logger = new Logger({
@@ -15,7 +15,7 @@ global.logger = new Logger({
 });
 await logger.init();
 
-export class NkWebServerProgram {
+export class HttpsOverWebSockerOuterServer {
   config!: Config;
 
   async start(config: Config) {
@@ -29,9 +29,8 @@ export class NkWebServerProgram {
   }
 
   async _initialize() {
-    startServer();
+    startHisServer(this.config);
   }
-
 }
 
 process.on("uncaughtException", function (err) {
@@ -40,4 +39,3 @@ process.on("uncaughtException", function (err) {
   console.log("uncaughtException stack:", err.stack);
   console.error(err);
 });
-

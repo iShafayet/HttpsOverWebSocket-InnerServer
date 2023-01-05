@@ -1,0 +1,18 @@
+{
+  "pssk": "THIS_IS_A_SECRET",
+  "symmetricEncryption": {
+    "enabled": false,
+    "algorithm": "AES-256-GCM",
+    "secret": "THIS_IS_A_DEEPER_SECRET"
+  },
+  "outerServer": {
+    "url": "localhost:9051"
+  },
+  "localServer": {
+    "url": "localhost:8080"
+  },
+  "outgoingConnection": {
+    "maxCount": 50,
+    "minCount": 10
+  }
+}
