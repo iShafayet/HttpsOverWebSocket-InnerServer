@@ -6,10 +6,10 @@
     "secret": "THIS_IS_A_DEEPER_SECRET"
   },
   "outerServer": {
-    "url": "localhost:9051"
+    "url": "ws://127.0.0.1:9051"
   },
   "localServer": {
-    "url": "localhost:8080"
+    "url": "http://localhost:9041"
   },
   "outgoingConnection": {
     "maxCount": 50,
