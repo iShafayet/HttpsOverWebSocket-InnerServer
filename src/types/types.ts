@@ -1,24 +1,6 @@
-import { type } from "os";
-import wsModule, { WebSocket } from "ws";
+import { WebSocket } from "ws";
 
 export type HisWebSocket = { uid: string } & WebSocket;
-
-export enum HisTransmissionInternalState {
-  Idle,
-  AtLeastOneRequestTransmissionSent,
-  ResponseHeadersSent,
-  ResponseCleanlyEnded,
-  HisError,
-  ConnectionError,
-}
-
-export type HisTransmission = {
-  uuid: string;
-  serial: number;
-  hasMore: boolean;
-  responseHeadersSent: boolean;
-  hisTransmissionInternalState: HisTransmissionInternalState;
-};
 
 export enum HosToHisMessageType {
   ContainsRequestData = "ContainsRequestData",

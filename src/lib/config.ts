@@ -1,18 +1,18 @@
 export type Config = {
   pssk: string;
   symmetricEncryption: {
-    enabled: boolean,
-    algorithm: string,
-    secret: string
+    enabled: boolean;
+    algorithm: string;
+    secret: string;
   };
   outerServer: {
-    url: string
-  },
+    url: string;
+  };
   localServer: {
-    url: string
-  },
+    url: string;
+  };
   outgoingConnection: {
-    maxCount: number,
-    minCount: number
-  }
+    maxCount: number;
+    minCount: number;
+  };
 };

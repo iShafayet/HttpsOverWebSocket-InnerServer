@@ -14,7 +14,7 @@ export class OutgoingConnectionPool {
   reconnectionDelayOnDisconnect!: number;
   hosUrl: string;
   handleTransmissionFn:
-    | ((config: Config, ws: HisWebSocket) => Promise<void>)
+    | ((config: Config, ws: HisWebSocket) => void)
     | undefined;
   config: Config;
 
@@ -67,7 +67,7 @@ export class OutgoingConnectionPool {
         ws.uid = uid;
 
         ws.once("open", () => {
-          logger.log(`CPOOL: ${uid}: Connection successfully established`);
+          logger.log(`CPOOL: ${uid}: Connection successfully established.`);
           this.connectionMap.set(ws.uid, ws);
           wasOpened = true;
           this.handleTransmissionFn!(this.config, ws);
@@ -126,7 +126,7 @@ export class OutgoingConnectionPool {
   }
 
   setTransmissionHandler(
-    handleTransmissionFn: (config: Config, ws: HisWebSocket) => Promise<void>
+    handleTransmissionFn: (config: Config, ws: HisWebSocket) => void
   ) {
     this.handleTransmissionFn = handleTransmissionFn;
   }

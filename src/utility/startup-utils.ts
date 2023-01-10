@@ -24,9 +24,8 @@ export const loadConfig = (path: String): Config => {
   return JSON.parse(content);
 };
 
-import { homedir } from "os";
+import os, { homedir } from "os";
 import path from "path";
-import os from "os";
 import constants from "../constant/common-constants.js";
 
 const ARG_CONFIG_LOCATION = "--config";

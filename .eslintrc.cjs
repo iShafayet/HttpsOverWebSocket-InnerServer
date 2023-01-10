@@ -7,6 +7,8 @@ module.exports = {
   rules: {
     "prefer-const": "off",
     "no-prototype-builtins": "off",
+    "no-async-promise-executor": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
   },
   globals: {
     dispatch: true,

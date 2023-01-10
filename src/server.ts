@@ -1,15 +1,7 @@
-import https from "https";
-import http from "http";
-import fs from "fs";
-import wsModule, { WebSocketServer } from "ws";
 import { Config } from "./lib/config.js";
-import { AddressInfo } from "net";
 import { OutgoingConnectionPool } from "./lib/connection-pool.js";
-import { handleTransmission } from "./lib/handle-transmission.js";
-import { CodedError } from "./utility/coded-error.js";
-import { ErrorCode } from "./constant/error-codes.js";
-
-let wss: wsModule.Server<wsModule.WebSocket>;
+import { Transmission } from "./lib/transmission.js";
+import { HisWebSocket } from "./types/types.js";
 
 export const startHisServer = async (config: Config) => {
   let wsPool = new OutgoingConnectionPool(config, {
@@ -19,7 +11,11 @@ export const startHisServer = async (config: Config) => {
     hosUrl: config.outerServer.url,
   });
 
-  wsPool.setTransmissionHandler(handleTransmission);
+  wsPool.setTransmissionHandler((config: Config, ws: HisWebSocket) => {
+    logger.log(`SERVER: ${ws.uid}: Instanciating a <Transmission>.`);
+    let transmission = new Transmission(config, ws);
+    transmission.start();
+  });
 
   await wsPool.start();
 };
