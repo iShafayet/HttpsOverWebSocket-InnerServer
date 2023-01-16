@@ -6,6 +6,7 @@ import {
   HosToHisMessageType,
 } from "../types/types.js";
 import { CodedError, UserError } from "../utility/coded-error.js";
+import { decryptText, encryptText } from "../utility/crypto-utils.js";
 import {
   createHttpOrHttpsConnection,
   prepareHisToHosMessage,
@@ -39,8 +40,21 @@ class Transmission {
       );
     }
 
-    this.ws.on("message", (messageString: string, isBinary) => {
+    this.ws.on("message", async (messageString: string, isBinary) => {
       messageString = isBinary ? messageString : messageString.toString();
+
+      if (this.config.symmetricEncryption.enabled) {
+        let parts = JSON.parse(messageString) as {
+          cipher: any;
+          iv: any;
+          salt: any;
+        };
+
+        messageString = await decryptText(
+          parts,
+          this.config.symmetricEncryption.secret
+        );
+      }
 
       logger.log("RAW MESSAGE", messageString);
       let [pssk, message] = unpackHosToHisMessage(messageString);
@@ -101,7 +115,10 @@ class Transmission {
       this.req.once("error", (ex) => this.die(ex));
 
       this.req.once("response", (res: http.IncomingMessage) => {
-        logger.debug("RESPONSE IS HERE");
+        logger.debug(
+          `TRANSMISSION: ${this.ws.uid}: Response from local server received`
+        );
+
         this.res = res;
         this.res.once("error", (ex) => this.die(ex));
 
@@ -164,7 +181,7 @@ class Transmission {
     this.endAndCleanUp();
   }
 
-  public sendMessage(message: HisToHosMessage) {
+  public async sendMessage(message: HisToHosMessage) {
     this.serial += 1;
     message.serial += 1;
 
@@ -175,6 +192,12 @@ class Transmission {
       message.type,
       message
     );
+
+    if (this.config.symmetricEncryption.enabled) {
+      messageString = JSON.stringify(
+        await encryptText(messageString, this.config.symmetricEncryption.secret)
+      );
+    }
 
     this.ws.send(messageString);
   }

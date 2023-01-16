@@ -95,7 +95,7 @@ export const sendMessageRequestingMoreRequestData = async (
 
   logger.debug("TRANSMISSION: hisToHos message", message);
 
-  transmission.sendMessage(message);
+  await transmission.sendMessage(message);
 };
 
 export const sendFirstMessageWithResponseData = async (
@@ -125,7 +125,7 @@ export const sendFirstMessageWithResponseData = async (
 
   logger.debug("TRANSMISSION: hisToHos message with data (first)", message);
 
-  transmission.sendMessage(message);
+  await transmission.sendMessage(message);
 };
 
 export const sendSubsequentMessageWithMoreResponseData = async (
@@ -156,7 +156,7 @@ export const sendSubsequentMessageWithMoreResponseData = async (
     message
   );
 
-  transmission.sendMessage(message);
+  await transmission.sendMessage(message);
 };
 
 export const parseHosToHisMessage = (
