@@ -6,7 +6,9 @@ import {
   HisToHosMessage,
   HisToHosMessageType,
   HosToHisMessage,
+  HosToHisMessageType,
 } from "../types/types.js";
+import { UserError } from "./coded-error.js";
 import { sleep } from "./misc-utils.js";
 
 export const readBodyChunk = (
@@ -33,8 +35,15 @@ export const packMessage = (message: HisToHosMessage): string => {
   return JSON.stringify(message);
 };
 
-export const unpackHosToHisMessage = (message: string): HosToHisMessage => {
-  return JSON.parse(message);
+export const unpackHosToHisMessage = (
+  messageString: string
+): HosToHisMessage => {
+  let [uuid, serial, type, message] = parseHosToHisMessage(messageString);
+  message.uuid = uuid;
+  message.serial = serial;
+  message.type = type;
+
+  return message;
 };
 
 export const createHttpOrHttpsConnection = (
@@ -148,4 +157,38 @@ export const sendSubsequentMessageWithMoreResponseData = async (
   );
 
   transmission.sendMessage(message);
+};
+
+export const parseHosToHisMessage = (
+  rawMessage: string
+): [string, number, HosToHisMessageType, HosToHisMessage] => {
+  const MINIMUM_LENGTH = 20;
+  if (rawMessage.length < MINIMUM_LENGTH) {
+    throw new UserError("INVALID_MESSAGE", "Message is too short");
+  }
+
+  let index = rawMessage.indexOf("}");
+  if (index === -1) {
+    throw new UserError("INVALID_MESSAGE", "Message is malformatted. (Case 1)");
+  }
+
+  let lhs = rawMessage.slice(0, index + 1);
+  let rhs = rawMessage.slice(index + 1);
+
+  lhs = lhs.slice(1, lhs.length - 1);
+  let [uuid, serial, type] = lhs.split(",");
+
+  let message = JSON.parse(rhs);
+
+  return [uuid, parseInt(serial), type as HosToHisMessageType, message];
+};
+
+export const prepareHisToHosMessage = (
+  uuid: string,
+  serial: number,
+  type: HisToHosMessageType,
+  message: HisToHosMessage
+): string => {
+  let rawMessage = `{${uuid},${serial},${type}}` + JSON.stringify(message);
+  return rawMessage;
 };

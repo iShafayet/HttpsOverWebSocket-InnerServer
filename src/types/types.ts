@@ -17,7 +17,6 @@ export enum HisToHosMessageType {
 export type HosToHisMessage = {
   uuid: string;
   serial: number;
-
   type: HosToHisMessageType;
 
   method: string | null;
@@ -31,7 +30,6 @@ export type HosToHisMessage = {
 export type HisToHosMessage = {
   uuid: string;
   serial: number;
-
   type: HisToHosMessageType;
 
   statusCode: number | null;

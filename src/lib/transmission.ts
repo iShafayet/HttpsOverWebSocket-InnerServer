@@ -8,8 +8,10 @@ import {
 import { CodedError } from "../utility/coded-error.js";
 import {
   createHttpOrHttpsConnection,
+  prepareHisToHosMessage,
   sendFirstMessageWithResponseData,
   sendMessageRequestingMoreRequestData,
+  sendSubsequentMessageWithMoreResponseData,
   unpackHosToHisMessage,
   writeData,
 } from "../utility/transmission-helper.js";
@@ -37,7 +39,10 @@ class Transmission {
       );
     }
 
-    this.ws.on("message", (messageString: string) => {
+    this.ws.on("message", (messageString: string, isBinary) => {
+      messageString = isBinary ? messageString : messageString.toString();
+
+      logger.log("RAW MESSAGE", messageString);
       let message: HosToHisMessage = unpackHosToHisMessage(messageString);
       logger.debug(`TRANSMISSION: ${this.ws.uid}: Message received`, message);
 
@@ -104,7 +109,9 @@ class Transmission {
 
   private async handleMessageThatWantsMoreResponseData(
     message: HosToHisMessage
-  ) {}
+  ) {
+    sendSubsequentMessageWithMoreResponseData(this, this.req!, this.res!);
+  }
 
   private async handleMessageThatIsNotifyingEndOfTransmission(
     message: HosToHisMessage
@@ -149,7 +156,14 @@ class Transmission {
   public sendMessage(message: HisToHosMessage) {
     this.serial += 1;
     message.serial += 1;
-    let messageString = JSON.stringify(message);
+
+    let messageString = prepareHisToHosMessage(
+      message.uuid,
+      message.serial,
+      message.type,
+      message
+    );
+
     this.ws.send(messageString);
   }
 }
