@@ -37,13 +37,13 @@ export const packMessage = (message: HisToHosMessage): string => {
 
 export const unpackHosToHisMessage = (
   messageString: string
-): HosToHisMessage => {
-  let [uuid, serial, type, message] = parseHosToHisMessage(messageString);
+): [string, HosToHisMessage] => {
+  let [pssk, uuid, serial, type, message] = parseHosToHisMessage(messageString);
   message.uuid = uuid;
   message.serial = serial;
   message.type = type;
 
-  return message;
+  return [pssk, message];
 };
 
 export const createHttpOrHttpsConnection = (
@@ -161,7 +161,7 @@ export const sendSubsequentMessageWithMoreResponseData = async (
 
 export const parseHosToHisMessage = (
   rawMessage: string
-): [string, number, HosToHisMessageType, HosToHisMessage] => {
+): [string, string, number, HosToHisMessageType, HosToHisMessage] => {
   const MINIMUM_LENGTH = 20;
   if (rawMessage.length < MINIMUM_LENGTH) {
     throw new UserError("INVALID_MESSAGE", "Message is too short");
@@ -176,19 +176,21 @@ export const parseHosToHisMessage = (
   let rhs = rawMessage.slice(index + 1);
 
   lhs = lhs.slice(1, lhs.length - 1);
-  let [uuid, serial, type] = lhs.split(",");
+  let [pssk, uuid, serial, type] = lhs.split(",");
 
   let message = JSON.parse(rhs);
 
-  return [uuid, parseInt(serial), type as HosToHisMessageType, message];
+  return [pssk, uuid, parseInt(serial), type as HosToHisMessageType, message];
 };
 
 export const prepareHisToHosMessage = (
+  pssk: string,
   uuid: string,
   serial: number,
   type: HisToHosMessageType,
   message: HisToHosMessage
 ): string => {
-  let rawMessage = `{${uuid},${serial},${type}}` + JSON.stringify(message);
+  let rawMessage =
+    `{${pssk},${uuid},${serial},${type}}` + JSON.stringify(message);
   return rawMessage;
 };

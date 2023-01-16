@@ -5,7 +5,7 @@ import {
   HosToHisMessage,
   HosToHisMessageType,
 } from "../types/types.js";
-import { CodedError } from "../utility/coded-error.js";
+import { CodedError, UserError } from "../utility/coded-error.js";
 import {
   createHttpOrHttpsConnection,
   prepareHisToHosMessage,
@@ -43,8 +43,19 @@ class Transmission {
       messageString = isBinary ? messageString : messageString.toString();
 
       logger.log("RAW MESSAGE", messageString);
-      let message: HosToHisMessage = unpackHosToHisMessage(messageString);
+      let [pssk, message] = unpackHosToHisMessage(messageString);
       logger.debug(`TRANSMISSION: ${this.ws.uid}: Message received`, message);
+
+      if (this.config.pssk !== pssk) {
+        logger.warn(
+          new UserError(
+            "RECEIVED_MESSAGE_WITH_INVALID_PSSK",
+            "Invalid PSSK Provided. We will disregard this message."
+          )
+        );
+        return;
+        // TODO: Take stronger action than ignoring the message.
+      }
 
       this.handleMessage(message);
     });
@@ -158,6 +169,7 @@ class Transmission {
     message.serial += 1;
 
     let messageString = prepareHisToHosMessage(
+      this.config.pssk,
       message.uuid,
       message.serial,
       message.type,
