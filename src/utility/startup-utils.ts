@@ -6,21 +6,13 @@ export const extractProcessParams = () => {
     throw new Error("Invalid number of arguments");
   }
 
-  let index = process.argv.findIndex((arg) => {
-    return arg.indexOf("start.js") > -1 || arg.indexOf("start-dev.js") > -1;
-  });
-
-  if (index === -1) {
-    throw new Error("Expected start.js or start-dev.js in process arguments.");
-  }
-
-  return process.argv.slice(index + 1);
+  return process.argv.slice();
 };
 
 export const loadConfig = (path: String): Config => {
-  console.log(`STARTUP trying to load configuration from: ${path}`);
+  logger.log(`STARTUP trying to load configuration from: ${path}`);
   let content = readFileSync(<any>path, { encoding: "utf8" });
-  console.log(`STARTUP loading config: ${content}`);
+  logger.log(`STARTUP loading config: ${content}`);
   return JSON.parse(content);
 };
 
@@ -39,7 +31,7 @@ export const lookupAndLoadConfigAsync = (commandLineParams: string[]) => {
     let index = commandLineParams.indexOf(ARG_CONFIG_LOCATION) + 1;
     let configLocation = commandLineParams[index];
 
-    console.log(
+    logger.log(
       "STARTUP Config location (from command line): ",
       configLocation
     );
@@ -49,7 +41,7 @@ export const lookupAndLoadConfigAsync = (commandLineParams: string[]) => {
   // Next priority is the environment variable;
   if (process.env[ENVIRONMENT_CONFIG_LOCATION_KEY]) {
     let configLocation = process.env[ENVIRONMENT_CONFIG_LOCATION_KEY];
-    console.log(
+    logger.log(
       "STARTUP Config location (from environment variable): ",
       configLocation
     );
