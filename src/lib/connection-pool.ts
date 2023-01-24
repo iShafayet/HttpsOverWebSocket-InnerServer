@@ -50,7 +50,7 @@ export class OutgoingConnectionPool {
   }
 
   private computeNumberOfConnectionsThatCanBeMade(): number {
-    return Math.max(this.minCount - this.connectionMap.size - 0);
+    return Math.max(this.minCount - this.connectionMap.size, 0);
   }
 
   openANewConnection() {
