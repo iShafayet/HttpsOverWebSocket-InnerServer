@@ -7,6 +7,7 @@ import { Config } from "./config.js";
 export class OutgoingConnectionPool {
   private uidSeed = 0;
   private connectionMap!: Map<string, HisWebSocket>;
+  private pendingConnectionMap!: Map<string, boolean>;
 
   maxCount: number;
   minCount: number;
@@ -43,6 +44,7 @@ export class OutgoingConnectionPool {
     this.config = config;
 
     this.connectionMap = new Map<string, HisWebSocket>();
+    this.pendingConnectionMap = new Map<string, boolean>();
   }
 
   private getNewUid(): string {
@@ -50,10 +52,19 @@ export class OutgoingConnectionPool {
   }
 
   private computeNumberOfConnectionsThatCanBeMade(): number {
-    return Math.max(this.minCount - this.connectionMap.size, 0);
+    return Math.max(
+      this.minCount - this.connectionMap.size - this.pendingConnectionMap.size,
+      0
+    );
   }
 
   openANewConnection() {
+    let connectionsToOpen = this.computeNumberOfConnectionsThatCanBeMade();
+    if (connectionsToOpen === 0) {
+      logger.log(`CPOOL: Maximum number of connections has been reached.`);
+      return;
+    }
+
     return new Promise((accept, reject) => {
       let wasOpened = false;
 
@@ -65,9 +76,11 @@ export class OutgoingConnectionPool {
       try {
         let ws: HisWebSocket = new WebSocket(this.hosUrl) as HisWebSocket;
         ws.uid = uid;
+        this.pendingConnectionMap.set(ws.uid, true);
 
         ws.once("open", () => {
           logger.log(`CPOOL: ${uid}: Connection successfully established.`);
+          this.pendingConnectionMap.delete(ws.uid);
           this.connectionMap.set(ws.uid, ws);
           wasOpened = true;
           this.handleTransmissionFn!(this.config, ws);
@@ -91,6 +104,7 @@ export class OutgoingConnectionPool {
             `CPOOL: ${uid}: Connection was closed. Requesting new connection to be made after delay.`
           );
           this.connectionMap.delete(ws.uid);
+          this.pendingConnectionMap.delete(ws.uid);
           this.handlePreviouslySuccessfulConnectionClosure();
         });
       } catch (ex) {
@@ -117,17 +131,25 @@ export class OutgoingConnectionPool {
     let connectionsToOpen = this.computeNumberOfConnectionsThatCanBeMade();
     for (let i = 0; i < connectionsToOpen; i++) {
       await this.openANewConnection();
+      this.reportConnectionStatus();
     }
   }
 
   async start() {
     logger.log(`CPOOL: Start`);
+    this.reportConnectionStatus();
     await this.tryOpeningNecessaryConnections();
+    this.reportConnectionStatus();
   }
 
   setTransmissionHandler(
     handleTransmissionFn: (config: Config, ws: HisWebSocket) => void
   ) {
     this.handleTransmissionFn = handleTransmissionFn;
+  }
+
+  reportConnectionStatus() {
+    let message = `Connections: ${this.connectionMap.size}, pending connections: ${this.pendingConnectionMap.size}`;
+    logger.debug(`CPOOL: ${message}`);
   }
 }
