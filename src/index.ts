@@ -1,19 +1,10 @@
-import { Config } from "./lib/config.js";
-import { Logger } from "./lib/logger.js";
-import { startHisServer } from "./server.js";
+// Patch webcrypto for nodejs 18 LTS
+import webcrypto from "node:crypto";
+// @ts-ignore
+globalThis.crypto = webcrypto;
 
-// We initiate logger and inject it into global so that it is usable everywhere.
-global.logger = new Logger({
-  switches: {
-    debug: true,
-    log: true,
-    important: true,
-    warning: true,
-    error: true,
-    urgent: true,
-  },
-});
-await logger.init();
+import { Config } from "./lib/config.js";
+import { startHisServer } from "./server.js";
 
 export class HttpsOverWebSockerOuterServer {
   config!: Config;
