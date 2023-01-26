@@ -6,6 +6,8 @@ const constants = {
   data: {
     CHUNK_SIZE_BYTES: 100_000,
   },
+  serverSocketPingTimeout: 30_000,
+  socketPingThreshod: 1_000,
 };
 
 export default constants;

@@ -1,4 +1,5 @@
 import wsModule, { WebSocket } from "ws";
+import constants from "../constant/common-constants.js";
 import { ErrorCode } from "../constant/error-codes.js";
 import { HisWebSocket } from "../types/types.js";
 import { CodedError } from "../utility/coded-error.js";
@@ -78,7 +79,24 @@ export class OutgoingConnectionPool {
         ws.uid = uid;
         this.pendingConnectionMap.set(ws.uid, true);
 
+        let pingTimeout: NodeJS.Timeout;
+
+        const heartbeat = () => {
+          logger.log(`CPOOL: ${uid}: Hearbeat.`);
+
+          clearTimeout(pingTimeout);
+          pingTimeout = setTimeout(() => {
+            logger.log(`CPOOL: ${uid}: Hearbeat failed. Terminating.`);
+
+            ws.terminate();
+          }, constants.serverSocketPingTimeout + constants.socketPingThreshod);
+        };
+
+        ws.on("ping", heartbeat);
+
         ws.once("open", () => {
+          heartbeat();
+
           logger.log(`CPOOL: ${uid}: Connection successfully established.`);
           this.pendingConnectionMap.delete(ws.uid);
           this.connectionMap.set(ws.uid, ws);
