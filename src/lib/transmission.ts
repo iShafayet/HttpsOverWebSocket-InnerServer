@@ -1,6 +1,7 @@
 import http from "http";
 import {
   HisToHosMessage,
+  HisToHosMessageType,
   HisWebSocket,
   HosToHisMessage,
   HosToHisMessageType,
@@ -60,6 +61,8 @@ class Transmission {
       let [pssk, message] = unpackHosToHisMessage(messageString);
       logger.debug(`TRANSMISSION: ${this.ws.uid}: Message received`, message);
 
+      this.ws.lastReceiveEpoch = Date.now();
+
       if (this.config.pssk !== pssk) {
         logger.warn(
           new UserError(
@@ -69,6 +72,20 @@ class Transmission {
         );
         return;
         // TODO: Take stronger action than ignoring the message.
+      }
+
+      if (message.type === HosToHisMessageType.KeepAlivePing) {
+        logger.log("Responding to ping with pong");
+        await this.sendMessage({
+          uuid: "-1",
+          serial: -1,
+          type: HisToHosMessageType.KeepAlivePong,
+          statusCode: null,
+          headers: null,
+          body: null,
+          hasMore: false,
+        });
+        return;
       }
 
       this.handleMessage(message);

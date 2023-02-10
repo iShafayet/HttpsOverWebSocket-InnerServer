@@ -80,27 +80,31 @@ export class OutgoingConnectionPool {
         this.pendingConnectionMap.set(ws.uid, true);
 
         let pingTimeout: NodeJS.Timeout;
+        const checkIfIdle = () => {
+          logger.log(`CPOOL: ${uid}: Checking if idle.`);
 
-        const heartbeat = () => {
-          logger.log(`CPOOL: ${uid}: Hearbeat.`);
+          if (
+            ws.lastReceiveEpoch + constants.socketIdleRejectionThreshold <
+            Date.now()
+          ) {
+            logger.log(`CPOOL: ${uid}: Found to be idle. Terminating.`);
+            ws.terminate();
+          }
 
           clearTimeout(pingTimeout);
-          pingTimeout = setTimeout(() => {
-            logger.log(`CPOOL: ${uid}: Hearbeat failed. Terminating.`);
-
-            ws.terminate();
-          }, constants.serverSocketPingTimeout + constants.socketPingThreshod);
+          pingTimeout = setTimeout(
+            checkIfIdle,
+            constants.pruningAttemptInterval
+          );
         };
 
-        ws.on("ping", heartbeat);
-
         ws.once("open", () => {
-          heartbeat();
-
           logger.log(`CPOOL: ${uid}: Connection successfully established.`);
           this.pendingConnectionMap.delete(ws.uid);
           this.connectionMap.set(ws.uid, ws);
           wasOpened = true;
+          ws.lastReceiveEpoch = Date.now();
+          checkIfIdle();
           this.handleTransmissionFn!(this.config, ws);
           accept(ws);
         });
@@ -115,6 +119,7 @@ export class OutgoingConnectionPool {
           if (!wasOpened) {
             reject(err);
           }
+          clearTimeout(pingTimeout);
         });
 
         ws.once("close", (code, reason) => {
@@ -124,6 +129,7 @@ export class OutgoingConnectionPool {
           this.connectionMap.delete(ws.uid);
           this.pendingConnectionMap.delete(ws.uid);
           this.handlePreviouslySuccessfulConnectionClosure();
+          clearTimeout(pingTimeout);
         });
       } catch (ex) {
         logger.log(

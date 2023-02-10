@@ -1,17 +1,22 @@
 import { WebSocket } from "ws";
 
-export type HisWebSocket = { uid: string } & WebSocket;
+export type HisWebSocket = {
+  uid: string;
+  lastReceiveEpoch: number;
+} & WebSocket;
 
 export enum HosToHisMessageType {
   ContainsRequestData = "ContainsRequestData",
   WantsMoreResponseData = "WantsMoreResponseData",
   NotifyingEndOfTransmission = "NotifyingEndOfTransmission",
+  KeepAlivePing = "KeepAlivePing",
 }
 
 export enum HisToHosMessageType {
   WantsMoreRequestData = "WantsMoreRequestData",
   ContainsResponseData = "ContainsResponseData",
   TransmissionError = "TransmissionError",
+  KeepAlivePong = "KeepAlivePong",
 }
 
 export type HosToHisMessage = {
