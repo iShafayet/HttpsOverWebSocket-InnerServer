@@ -81,7 +81,7 @@ export class OutgoingConnectionPool {
 
         let pingTimeout: NodeJS.Timeout;
         const checkIfIdle = () => {
-          logger.log(`CPOOL: ${uid}: Checking if idle.`);
+          // logger.log(`CPOOL: ${uid}: Checking if idle.`);
 
           if (
             ws.lastReceiveEpoch + constants.socketIdleRejectionThreshold <

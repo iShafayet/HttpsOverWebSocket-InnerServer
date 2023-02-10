@@ -199,8 +199,10 @@ class Transmission {
   }
 
   public async sendMessage(message: HisToHosMessage) {
-    this.serial += 1;
-    message.serial += 1;
+    if (message.serial !== -1) {
+      this.serial += 1;
+      message.serial += 1;
+    }
 
     let messageString = prepareHisToHosMessage(
       this.config.pssk,
